@@ -1,0 +1,168 @@
+<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Converter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Currency Converter</h1>
+    <div class="converter">
+      <div class="field">
+        <label for="fromCurrency">From:</label>
+        <select id="fromCurrency"></select>
+      </div>
+      <div class="field">
+        <label for="toCurrency">To:</label>
+        <select id="toCurrency"></select>
+      </div>
+      <div class="field">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" placeholder="Enter amount">
+      </div>
+      <button id="convertButton">Convert</button>
+      <div class="result" id="result">Converted Amount: </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+</html>
+
+
+<!-- CSS codes -->
+<style>
+
+body {
+  background-color: yellow;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  text-align: center;
+  padding: 20px;
+  border: 2px solid black;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #fff200;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  text-transform: uppercase;
+}
+
+.converter {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input, select, button {
+  padding: 10px;
+  border: 2px solid black;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button {
+  background-color: black;
+  color: yellow;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: yellow;
+  color: black;
+  border-color: yellow;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+</style>
+
+<!-- Javascript codes -->
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const fromCurrency = document.getElementById("fromCurrency");
+  const toCurrency = document.getElementById("toCurrency");
+  const amountInput = document.getElementById("amount");
+  const convertButton = document.getElementById("convertButton");
+  const resultDisplay = document.getElementById("result");
+
+  // Fetch currency options from API
+  fetch("https://open.er-api.com/v6/latest/USD")
+    .then((response) => response.json())
+    .then((data) => {
+      const currencies = Object.keys(data.rates);
+      currencies.forEach((currency) => {
+        const optionFrom = document.createElement("option");
+        const optionTo = document.createElement("option");
+        optionFrom.value = currency;
+        optionTo.value = currency;
+        optionFrom.textContent = currency;
+        optionTo.textContent = currency;
+        fromCurrency.appendChild(optionFrom);
+        toCurrency.appendChild(optionTo);
+      });
+    })
+    .catch((error) => {
+      resultDisplay.textContent = "Error loading currencies. Please try again.";
+      console.error(error);
+    });
+
+  // Convert currency
+  convertButton.addEventListener("click", () => {
+    const from = fromCurrency.value;
+    const to = toCurrency.value;
+    const amount = parseFloat(amountInput.value);
+
+    if (!from || !to || isNaN(amount) || amount <= 0) {
+      resultDisplay.textContent = "Please enter valid inputs.";
+      return;
+    }
+
+    fetch(`https://open.er-api.com/v6/latest/${from}`)
+      .then((response) => response.json())
+      .then((data) => {
+        const rate = data.rates[to];
+        if (rate) {
+          const convertedAmount = (amount * rate).toFixed(2);
+          resultDisplay.textContent = `Converted Amount: ${convertedAmount} ${to}`;
+        } else {
+          resultDisplay.textContent = "Error fetching conversion rate.";
+        }
+      })
+      .catch((error) => {
+        resultDisplay.textContent = "Error during conversion. Please try again.";
+        console.error(error);
+      });
+  });
+});
+
+</script>
